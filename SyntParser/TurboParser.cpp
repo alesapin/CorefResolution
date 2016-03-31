@@ -4,11 +4,15 @@
 
 #include "TurboParser.h"
 namespace synt{
-    const std::string TurboParser::TURBO_PARSER_INP = "testSequence.xml";
     const std::string TurboParser::TURBO_PARSER_OUT = "turbo.txt";
-    const std::string TurboParser::MYSTEM_OUT = "mstemOutp.txt";
-    const std::string TurboParser::MYSTEM_INP = "mstemInp.txt";
-    const std::string TurboParser::BASIC_XML_PREFIX="sentences.p.se.w";
+    const std::string TurboParser::RUSDEPS_PARSER_OUT = "tmpBin";
+    const std::size_t TurboParser::MORPH_SP_COL = 3;
+    const std::size_t TurboParser::MORPH_WORDFORM_COL = 1;
+    const std::size_t TurboParser::MORPH_NORMALFORM_COL = 2;
+    const std::size_t TurboParser::SYNT_REFERED_NUM_COL = 6;
+    const std::size_t TurboParser::MORPH_CHARS_COL = 5;
+    const std::size_t TurboParser::SYNT_SP_COL = 3;
+
 //
 //    void TurboParser::prepareTurboparser(const std::string& text){
 //        using boost::property_tree::ptree;
@@ -28,108 +32,96 @@ namespace synt{
 //        write_xml(TURBO_PARSER_INP,pt,std::locale(),settings);
 //    }
 
-    std::vector<ParsedWord> TurboParser::invokeTurboParser(const std::string& text) const{
+    ParsedPharse TurboParser::invokeTurboParser(const std::string& text) const{
         std::string program = path + "/launch.sh \"" + text +"\" " + TURBO_PARSER_OUT;
         std::system(program.c_str());
-        std::ifstream ifs(TURBO_PARSER_OUT,std::ifstream::in);
-        std::string line;
-        std::vector<ParsedWord> result;
-        while(std::getline(ifs,line)) {
-            if (!line.empty()) {
-                result.push_back(parseTurboLine(line));
+        std::ifstream syntInform(TURBO_PARSER_OUT,std::ifstream::in);
+        std::ifstream morfInform(RUSDEPS_PARSER_OUT,std::ifstream::in);
+        std::string syntLine, morfLine;
+        ParsedPharse result;
+        bool found = false;
+        while(std::getline(syntInform,syntLine) && std::getline(morfInform,morfLine)) {
+            if (!syntLine.empty() && checkSyntLine(syntLine)) {
+                found = true;
+                generateLine(result,morfLine);
+                result.text = text;
+                break;
             }
         }
-        ifs.close();
-        std::remove(TURBO_PARSER_OUT.c_str());
-        return result;
-    }
-    ParsedWord TurboParser::parseTurboLine(const std::string &line) const {
-        std::vector<std::string> splited;
-        boost::algorithm::split(splited,line,boost::is_any_of("\t "));
-        ParsedWord pw;
-        pw.form = splited[1];
-        pw.normalForm = splited[2];
-        pw.sp = getSpeechPartFromCorpString(splited[3]);
-        pw.referedSp = getSpeechPartFromCorpString(splited[4]);
-        pw.referNum = std::stoi(splited[6]);
-        return pw;
-    }
-    void TurboParser::invokeMorph(const std::string& str,std::vector<ParsedWord>& data) const {
-        std::string program = "python3 " + path + "/morph.py \"" +  str + "\" " + MYSTEM_OUT;
-        std::system(program.c_str());
-        std::ifstream ifs(MYSTEM_OUT);
-        std::string line;
-        int wordCounter = 0;
-        while(std::getline(ifs,line)){
-            if(line == "$$$"){
-                bool found = false;
-                while(std::getline(ifs,line)){
-                    std::vector<std::string> splited;
-                    boost::algorithm::split(splited,line,boost::is_any_of("\t "));
-                    if(getSpeechPartFromCorpString(splited[0]) == data[wordCounter].sp){
-                        data[wordCounter].morphChars = std::vector<std::string>(splited.begin() + 1,splited.end());
-                        wordCounter++;
+        if(!found) {
+            syntInform.clear();
+            morfInform.clear();
+            syntInform.seekg(0, std::ios::beg);
+            morfInform.seekg(0, std::ios_base::beg);
+            while (std::getline(syntInform, syntLine) && std::getline(morfInform, morfLine)) {
+                if (!syntLine.empty()) {
+                    std::vector<std::string> chars;
+                    boost::split(chars, syntLine, boost::is_any_of("\t "));
+                    if(chars[SYNT_SP_COL] == "NOUN" || chars[SYNT_SP_COL] == "NPRO"){
+                        generateLine(result,morfLine);
+                        result.text = text;
                         found = true;
                         break;
                     }
                 }
-                if (!found) {
-                    wordCounter++;
-                }
             }
         }
-        ifs.close();
-        std::remove(MYSTEM_OUT.c_str());
-    }
-
-    //    UNDEF = 0, NOUN = 1, VERB = 2, ADJF = 3, ADJS = 4, COMP = 5, INFN = 6, PRTF = 7, PRTS = 8, GRND = 9,
-//            NUMR = 10, ADVB = 11, NPRO = 12, PRED = 13, PREP = 14, CONJ = 15, PRCL = 16, INTJ = 17,
-    SpeechPart TurboParser::getSpeechPartFromCorpString(const std::string& spName) const {
-        if(spName == "NOUN"){
-            return SpeechPart::NOUN;
-        }else if(spName == "VERB"){
-            return SpeechPart::VERB;
-        }else if(spName == "ADJF"){
-            return SpeechPart::ADJF;
-        }else if(spName == "ADJS"){
-            return SpeechPart::ADJS;
-        }else if(spName == "COMP"){
-            return SpeechPart::COMP;
-        }else if(spName == "INFN"){
-            return SpeechPart::INFN;
-        }else if(spName == "PRTF"){
-            return SpeechPart::PRTF;
-        }else if(spName == "PRTS"){
-            return SpeechPart::PRTS;
-        }else if(spName == "GRND"){
-            return SpeechPart::GRND;
-        }else if(spName == "NUMR"){
-            return SpeechPart::NUMR;
-        }else if(spName == "ADVB"){
-            return SpeechPart::ADVB;
-        }else if(spName == "NPRO"){
-            return SpeechPart::NPRO;
-        }else if(spName == "PRED"){
-            return SpeechPart::PRED;
-        }else if(spName == "PREP"){
-            return SpeechPart::PREP;
-        }else if(spName == "CONJ"){
-            return SpeechPart::CONJ;
-        }else if(spName == "PRCL"){
-            return SpeechPart::PRCL;
-        }else if(spName == "INTJ"){
-            return SpeechPart::INTJ;
-        }else{
-            return SpeechPart::UNDEF;
+        if(! found){
+            syntInform.clear();
+            morfInform.clear();
+            syntInform.seekg(0, std::ios::beg);
+            morfInform.seekg(0, std::ios_base::beg);
+            std::getline(syntInform, syntLine);
+            std::getline(morfInform, morfLine);
+            generateLine(result,morfLine);
+            result.text = text;
         }
+//        std::remove(TURBO_PARSER_OUT.c_str());
+//        std::remove(RUSDEPS_PARSER_OUT.c_str());
+        return result;
     }
 
+    bool TurboParser::checkSyntLine(const std::string &line) const {
+        std::vector<std::string> chars;
+        boost::split(chars,line,boost::is_any_of("\t "));
+        if((chars[SYNT_SP_COL] == "NOUN" || chars[SYNT_SP_COL] == "NPRO")
+           && chars[SYNT_REFERED_NUM_COL] == "0") return true;
+        return false;
+    }
 
-    std::vector<ParsedWord> TurboParser::parse(const std::string& text) const {
-        std::vector<ParsedWord> res = invokeTurboParser(text);
-        invokeMorph(text,res);
-        return res;
+    void TurboParser::generateLine(ParsedPharse &ph, const std::string &morphLine) const{
+        std::vector<std::string> chars;
+        boost::split(chars,morphLine,boost::is_any_of("\t "));
+        if(chars[MORPH_SP_COL] == "NOUN"){
+            ph.sp = SpeechPart::NOUN;
+        }else {
+            ph.sp = SpeechPart::NPRO;
+        }
+        ph.mainWord = chars[MORPH_WORDFORM_COL];
+        ph.mainWordNormalForm = chars[MORPH_NORMALFORM_COL];
+        std::string morphChars = chars[MORPH_CHARS_COL];
+        boost::split(ph.morphChars,morphChars,boost::is_any_of("|"));
     }
 
 
 }
+
+std::ostream &::synt::operator<<(std::ostream &os, const synt::ParsedPharse &obj) {
+    os <<"[Text: " << obj.text<<";";
+    os <<" Main Word: "<<obj.mainWord<<";";
+    os <<" Main word NF: "<<obj.mainWordNormalForm<<";";
+    os <<" SP: ";
+    if(obj.sp == synt::SpeechPart::NOUN) {
+        os << "NOUN;";
+    }else{
+        os <<"NPRO;";
+    }
+    os << " Chars: ";
+    for(const std::string& chr : obj.morphChars){
+        os << chr <<"|";
+    }
+    os<<";";
+    os<<" Shift:" << obj.shift<<";]";
+    return os;
+}
+
