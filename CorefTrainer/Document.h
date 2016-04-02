@@ -15,12 +15,15 @@ namespace coref {
         const std::string name;
         std::vector<std::vector<synt::ParsedPharse>> coreferences;
         const synt::TurboParser *prs;
+
+        int getSingleDimenIndex(int i,int j);
     public:
         Document(const std::string &p, const std::string &n, const synt::TurboParser *pars) : path(p), name(n),prs(pars) { }
 
         void addCorefChain(const std::vector<synt::ParsedPharse> &coref);
 
         void loadCorefFromXml(const std::string &path);
+        friend std::ostream& operator<<(std::ostream& os,const Document& doc);
     };
 }
 

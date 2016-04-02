@@ -7,11 +7,9 @@ using namespace std;
 int main() {
     //Путь к турбопарсеру.
     synt::TurboParser tp("/home/alesapin/Code/cpp/mmaot/depsparser");
-//    synt::ParsedPharse res = tp.invokeTurboParser("который ходил");
-//    std::cerr<<res.text<<"\n";
-//    std::cerr<<res.mainWord<<"\n";
-//    std::cerr<<res.morphChars[0]<<"\n";
-    coref::Document d("OFC/","4.txt",&tp);
+
+    coref::Document d("OFC/","5.txt",&tp);
     d.loadCorefFromXml("anaphoraTrain2016/anaph_new.xml");
+    std::cerr<<d<<"\n";
     return 0;
 }
