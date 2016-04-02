@@ -2,6 +2,7 @@
 // Created by alesapin on 23.03.16.
 //
 
+#include <cursesw.h>
 #include "TurboParser.h"
 namespace synt{
     const std::string TurboParser::TURBO_PARSER_OUT = "turbo.txt";
@@ -74,7 +75,9 @@ namespace synt{
         ph.mainWord = chars[MORPH_WORDFORM_COL];
         ph.mainWordNormalForm = chars[MORPH_NORMALFORM_COL];
         std::string morphChars = chars[MORPH_CHARS_COL];
-        boost::split(ph.morphChars,morphChars,boost::is_any_of("|"));
+        ph.gen = getGender(morphChars);
+        ph.num = getNumber(morphChars);
+        ph.pers = getPerson(morphChars);
     }
 
     std::string TurboParser::prepareText(const std::vector<std::string> &req) const {
@@ -185,24 +188,42 @@ namespace synt{
             prevMorphPos = morphStream.tellg();
         }
     }
+
+    Gender TurboParser::getGender(const std::string &morphChars) const {
+        if(morphChars.find(toString(Gender::MASC)) !=  std::string::npos){
+            return Gender::MASC;
+        }else if(morphChars.find(toString(Gender::FEMN)) !=  std::string::npos){
+            return Gender::FEMN;
+        }else if(morphChars.find(toString(Gender::NEUT)) !=  std::string::npos){
+            return Gender::NEUT;
+        }else if(morphChars.find(toString(Gender::OVERALL)) !=  std::string::npos){
+            return Gender::OVERALL;
+        }
+        return Gender::UNDEF;
+    }
+
+    Number TurboParser::getNumber(const std::string &morphChars) const {
+        if(morphChars.find(toString(Number::SNG)) !=  std::string::npos){
+            return Number::SNG;
+        }else if (morphChars.find(toString(Number::PLR)) !=  std::string::npos){
+            return Number::PLR;
+        }
+        return Number::UNDEF;
+    }
+
+    Person TurboParser::getPerson(const std::string &morphChars) const {
+        if(morphChars.find(toString(Person::FP)) !=  std::string::npos){
+            return Person::FP;
+        }else if(morphChars.find(toString(Person::SP)) !=  std::string::npos){
+            return Person::SP;
+        }else if(morphChars.find(toString(Person::TP)) !=  std::string::npos){
+            return Person::TP;
+        }
+        return Person::UNDEF ;
+    }
+
+
 }
 
-std::ostream &::synt::operator<<(std::ostream &os, const synt::ParsedPharse &obj) {
-    os <<"[Text: " << obj.text<<";";
-    os <<" Main Word: "<<obj.mainWord<<";";
-    os <<" Main word NF: "<<obj.mainWordNormalForm<<";";
-    os <<" SP: ";
-    if(obj.sp == synt::SpeechPart::NOUN) {
-        os << "NOUN;";
-    }else{
-        os <<"NPRO;";
-    }
-    os << " Chars: ";
-    for(const std::string& chr : obj.morphChars){
-        os << chr <<"|";
-    }
-    os<<";";
-    os<<" Shift:" << obj.shift<<";]";
-    return os;
-}
+
 
