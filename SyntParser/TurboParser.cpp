@@ -29,7 +29,7 @@ namespace synt{
 //    }
 
     std::vector<ParsedWord> TurboParser::invokeTurboParser(const std::string& text) const{
-        std::string program = path + "/launch.sh \"" + text +"\" " + TURBO_PARSER_OUT;
+        std::string program = path + "/../launch.sh \"" + text +"\" " + TURBO_PARSER_OUT;
         std::system(program.c_str());
         std::ifstream ifs(TURBO_PARSER_OUT,std::ifstream::in);
         std::string line;
@@ -55,7 +55,7 @@ namespace synt{
         return pw;
     }
     void TurboParser::invokeMorph(const std::string& str,std::vector<ParsedWord>& data) const {
-        std::string program = "python3 " + path + "/morph.py \"" +  str + "\" " + MYSTEM_OUT;
+        std::string program = "python3 " + path + "/../morph.py \"" +  str + "\" " + MYSTEM_OUT;
         std::system(program.c_str());
         std::ifstream ifs(MYSTEM_OUT);
         std::string line;
