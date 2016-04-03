@@ -46,16 +46,22 @@ namespace coref {
                 int ind = getSingleDimenIndex(i,j);
                 coreferences[i][j].mainWord = result[ind].mainWord;
                 coreferences[i][j].mainWordNormalForm = result[ind].mainWordNormalForm;
-                coreferences[i][j].morphChars = result[ind].morphChars;
+                coreferences[i][j].gen = result[ind].gen;
+                coreferences[i][j].num = result[ind].num;
+                coreferences[i][j].pers = result[ind].pers;
                 coreferences[i][j].sp = result[ind].sp;
             }
         }
+        loadEntities();
     }
 
     int Document::getSingleDimenIndex(int i, int j) {
         return i*coreferences[i].size() + j;
     }
     std::ostream & operator<<(std::ostream &os, const Document &doc) {
+        for(auto ent = doc.entites.begin(); ent != doc.entites.end(); ++ent){
+            os<<*ent<<"\n";
+        }
         for(int i = 0;i<doc.coreferences.size();++i){
             std::cerr<<"Chain: \n";
             for(int j = 0;j<doc.coreferences[i].size();++j){
@@ -64,6 +70,16 @@ namespace coref {
         }
         return os;
     }
+
+    void Document::loadEntities() {
+        for(int i = 0;i<coreferences.size();++i) {
+            for (int j = 0; j < coreferences[i].size(); ++j) {
+                entites.insert(coreferences[i][j]);
+            }
+        }
+    }
+
+
 }
 
 

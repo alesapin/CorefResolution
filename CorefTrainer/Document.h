@@ -9,14 +9,17 @@
 #include "../SyntParser/TurboParser.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <set>
 namespace coref {
     class Document {
         const std::string path;
         const std::string name;
+        std::set<synt::ParsedPharse> entites;
         std::vector<std::vector<synt::ParsedPharse>> coreferences;
         const synt::TurboParser *prs;
 
         int getSingleDimenIndex(int i,int j);
+        void loadEntities();
     public:
         Document(const std::string &p, const std::string &n, const synt::TurboParser *pars) : path(p), name(n),prs(pars) { }
 
