@@ -24,10 +24,10 @@ int getdir (string dir, vector<string> &files)
 
 int main() {
     //Путь к турбопарсеру.
-    synt::TurboParser tp("/home/alesapin/Code/cpp/mmaot/depsparser");
-    //synt::TurboParser tp("/home/kir/UIMA/RussianDependencyParser");
-    //string dir = string("/home/kir/UIMA/CorefResolution/bin/anaphoraTrain2016/AnaphFiles/OFC");
-    string dir = string("/home/alesapin/Code/cpp/mmaot/depsparser/bin/anaphoraTrain2016/AnaphFiles/OFC");
+    //synt::TurboParser tp("/home/alesapin/Code/cpp/mmaot/depsparser");
+    synt::TurboParser tp("/home/kir/UIMA/RussianDependencyParser");
+    string dir = string("/home/kir/UIMA/CorefResolution/bin/anaphoraTrain2016/AnaphFiles/OFC");
+    //string dir = string("/home/alesapin/Code/cpp/mmaot/depsparser/bin/anaphoraTrain2016/AnaphFiles/OFC");
     vector<string> files = vector<string>();
     getdir(dir,files);
     std::sort(files.begin(), files.end());
