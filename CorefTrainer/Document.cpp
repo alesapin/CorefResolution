@@ -106,18 +106,22 @@ namespace coref {
 //                    else s<<"0 0\n";
 //                }
         for (std::set<synt::ParsedPharse>::iterator i = entites.begin(); i != entites.end(); i++) {
+            const synt::ParsedPharse* curMain = &(*i);
             for (std::set<synt::ParsedPharse>::iterator j = std::next(i, 1); j != entites.end() && j != std::next(i, lenTriples-1); j++) {
+                const synt::ParsedPharse* curFirstAlt = &(*j);
+                if (curFirstAlt->shift - curMain->shift > 200) break;
+                bool secondAltBreak = false;
                 for (std::set<synt::ParsedPharse>::iterator k = std::next(j, 1); k != entites.end() && k != std::next(j, lenTriples); k++) {
-                    const synt::ParsedPharse* curMain = &(*i);
-                    const synt::ParsedPharse* curFirstAlt = &(*j);
                     const synt::ParsedPharse* curSecondAlt = &(*k);
+                    if (curSecondAlt->shift - curMain->shift > 200) {secondAltBreak = true; break;}
                     s<<int(curMain->sp)<<" "<<int(curMain->gen)<<" "<<int(curMain->num)<<" "<<int(curMain->pers)<<" "<<curMain->shift<<" ";
                     s<<int(curFirstAlt->sp)<<" "<<int(curFirstAlt->gen)<<" "<<int(curFirstAlt->num)<<" "<<int(curFirstAlt->pers)<<" "<<curFirstAlt->shift<<" ";
                     s<<int(curSecondAlt->sp)<<" "<<int(curSecondAlt->gen)<<" "<<int(curSecondAlt->num)<<" "<<int(curSecondAlt->pers)<<" "<<curSecondAlt->shift<<" ";
-                    if (findCorefence(curMain,curFirstAlt))   s<<"1 0\n";
-                    else if (findCorefence(curMain,curSecondAlt)) s<<"0 1\n";
-                    else s<<"0 0\n";
+                    if (findCorefence(curMain,curFirstAlt))   s<<"\n1 0\n";
+                    else if (findCorefence(curMain,curSecondAlt)) s<<"\n0 1\n";
+                    else s<<"\n0 0\n";
                 }
+                if (secondAltBreak) break;
             }
         }
         s.close();
