@@ -4,6 +4,10 @@
 
 #include "Document.h"
 namespace coref {
+
+    const int Document::WINDOW_SIZE = 200;
+
+
     void Document::loadCorefFromXml(const std::string &xmlPath) {
         using boost::property_tree::ptree;
         ptree pt;
@@ -71,6 +75,9 @@ namespace coref {
         return os;
     }
 
+
+
+
     void Document::loadEntities() {
         for(int i = 0;i<coreferences.size();++i) {
             for (int j = 0; j < coreferences[i].size(); ++j) {
@@ -79,53 +86,114 @@ namespace coref {
         }
     }
 
-    bool Document::findCorefence(const synt::ParsedPharse* main, const synt::ParsedPharse* alt) {
+    bool Document::findCorefence(const synt::ParsedPharse& main, const synt::ParsedPharse& alt) const{
         for (int i =0 ; i<this->coreferences.size(); i++) {
-            if (coreferences[i][0] == *main &&coreferences[i][1] == *alt) return true;
+            if (coreferences[i][0] == main &&coreferences[i][1] == alt) return true;
         }
         return false;
     }
 
-    void Document::writeTiplesToFile(std::string file)
-    {
-        int lenTriples = 10;
-        std::ofstream s;
-        s.open( file.c_str(), std::ios_base::app );
-//        for(int i=0; i < this->entites.size(); i++)
-//            for (int j=i+1; j < i+lenTriples-1 && j<entites.size(); j++)
-//                for (int k=j+1; k < i+lenTriples && k<entites.size(); k++)
-//                {
-//                    synt::ParsedPharse* curMain = &this->entites[i];
-//                    synt::ParsedPharse* curFirstAlt = &this->entites[j];
-//                    synt::ParsedPharse* curSecondAlt = &this->entites[k];
-//                    s<<int(curMain->sp)<<" "<<int(curMain->gen)<<" "<<int(curMain->num)<<" "<<int(curMain->pers)<<" "<<curMain->shift<<" ";
-//                    s<<int(curFirstAlt->sp)<<" "<<int(curFirstAlt->gen)<<" "<<int(curFirstAlt->num)<<" "<<int(curFirstAlt->pers)<<" "<<curFirstAlt->shift<<" ";
-//                    s<<int(curSecondAlt->sp)<<" "<<int(curSecondAlt->gen)<<" "<<int(curSecondAlt->num)<<" "<<int(curSecondAlt->pers)<<" "<<curSecondAlt->shift<<" ";
-//                    if (findCorefence(curMain,curFirstAlt))   s<<"1 0\n";
-//                    else if (findCorefence(curMain,curSecondAlt)) s<<"0 1\n";
-//                    else s<<"0 0\n";
-//                }
-        for (std::set<synt::ParsedPharse>::iterator i = entites.begin(); i != entites.end(); i++) {
-            const synt::ParsedPharse* curMain = &(*i);
-            for (std::set<synt::ParsedPharse>::iterator j = std::next(i, 1); j != entites.end() && j != std::next(i, lenTriples-1); j++) {
-                const synt::ParsedPharse* curFirstAlt = &(*j);
-                if (curFirstAlt->shift - curMain->shift > 200) break;
+    void Document::writeTiplesToFile(std::string file) {
+        std::ofstream ofs(file);
+
+        for (auto curEnt = entites.begin(); curEnt != entites.end(); ++curEnt) {
+            for (auto firstCand = std::next(curEnt, 1); firstCand != entites.end(); firstCand++) {
+                if (firstCand->shift - curEnt->shift > WINDOW_SIZE) break;
                 bool secondAltBreak = false;
-                for (std::set<synt::ParsedPharse>::iterator k = std::next(j, 1); k != entites.end() && k != std::next(j, lenTriples); k++) {
-                    const synt::ParsedPharse* curSecondAlt = &(*k);
-                    if (curSecondAlt->shift - curMain->shift > 200) {secondAltBreak = true; break;}
-                    s<<int(curMain->sp)<<" "<<int(curMain->gen)<<" "<<int(curMain->num)<<" "<<int(curMain->pers)<<" "<<curMain->shift<<" ";
-                    s<<int(curFirstAlt->sp)<<" "<<int(curFirstAlt->gen)<<" "<<int(curFirstAlt->num)<<" "<<int(curFirstAlt->pers)<<" "<<curFirstAlt->shift<<" ";
-                    s<<int(curSecondAlt->sp)<<" "<<int(curSecondAlt->gen)<<" "<<int(curSecondAlt->num)<<" "<<int(curSecondAlt->pers)<<" "<<curSecondAlt->shift<<" ";
-                    if (findCorefence(curMain,curFirstAlt))   s<<"\n1 0\n";
-                    else if (findCorefence(curMain,curSecondAlt)) s<<"\n0 1\n";
-                    else s<<"\n0 0\n";
+                for (auto secondCand = std::next(firstCand, 1); secondCand != entites.end(); secondCand++) {
+                    if (secondCand->shift - curEnt->shift > WINDOW_SIZE) {
+                        secondAltBreak = true;
+                        break;
+                    }
+                    ofs<<int(curEnt->sp)<<" "<<int(curEnt->gen)<<" "<<int(curEnt->num)
+                        <<" "<<int(curEnt->pers)<<" ";
+                    ofs<<int(firstCand->sp)<<" "<<int(firstCand->gen)<<" "
+                        <<int(firstCand->num)<<" "<<int(firstCand->pers)<<" "<<firstCand->shift<<" ";
+                    ofs<<int(secondCand->sp)<<" "<<int(secondCand->gen)<<" "<<
+                            int(secondCand->num)<<" "<<int(secondCand->pers)<<" "<<secondCand->shift<<" ";
+                    if (findCorefence(*curEnt,*firstCand)) {
+                        ofs << "\n1 0\n";
+                    } else if (findCorefence(*curEnt, *secondCand)) {
+                        ofs << "\n0 1\n";
+                    } else {
+                        ofs << "\n0 0\n";
+                    }
                 }
                 if (secondAltBreak) break;
             }
         }
-        s.close();
+        ofs.close();
     }
+    std::vector<ClassifiedTriple> Document::getClassifiedTriples() const{
+        std::vector<ClassifiedTriple> result;
+        std::vector<Triple> triples = generateTriples(entites,WINDOW_SIZE);
+        for(const Triple& triple:triples) {
+            ClassifiedTriple trpl;
+            if (findCorefence(std::get<0>(triple), std::get<1>(triple))) {
+                trpl = std::make_tuple(std::get<0>(triple), std::get<1>(triple),
+                                       std::get<2>(triple), DetectedCoref::FIRST);
+            } else if (findCorefence(std::get<0>(triple), std::get<2>(triple))) {
+                trpl = std::make_tuple(std::get<0>(triple), std::get<1>(triple),
+                                       std::get<2>(triple), DetectedCoref::SECOND);
+            } else {
+                trpl = std::make_tuple(std::get<0>(triple), std::get<1>(triple),
+                                       std::get<2>(triple), DetectedCoref::NO);
+            }
+            result.push_back(trpl);
+        }
+        return result;
+    }
+
+    std::vector<Triple> Document::getTriples() const {
+        return generateTriples(entites,WINDOW_SIZE);
+    }
+
+
+    std::vector<Triple> generateTriples(const std::set<synt::ParsedPharse> &entites, int windowSize) {
+        std::vector<coref::Triple> result;
+        for (auto curEnt = entites.begin(); curEnt != entites.end(); ++curEnt) {
+            for (auto firstCand = std::next(curEnt, 1); firstCand != entites.end(); firstCand++) {
+                if (firstCand->shift - curEnt->shift > windowSize) break;
+                bool secondAltBreak = false;
+                for (auto secondCand = std::next(firstCand, 1); secondCand != entites.end(); secondCand++) {
+                    if (secondCand->shift - curEnt->shift > windowSize) {
+                        secondAltBreak = true;
+                        break;
+                    }
+                    auto triple = std::make_tuple(*curEnt,*firstCand,*secondCand);
+                    result.push_back(triple);
+                }
+                if (secondAltBreak) break;
+            }
+        }
+        return result;
+    }
+
+    static void writeClassifiedTriples(const std::vector<ClassifiedTriple>& triples,const std::string& filename){
+        std::ofstream ofs(filename);
+        for(const ClassifiedTriple& trpl:triples){
+            synt::ParsedPharse f = std::get<0>(trpl);
+            synt::ParsedPharse s = std::get<1>(trpl);
+            synt::ParsedPharse t = std::get<2>(trpl);
+            DetectedCoref type = std::get<3>(trpl);
+            ofs<<int(f.sp)<<" "<<int(f.gen)<<" "<<int(f.num) <<" "<<int(f.pers)<<" "<<" \n";
+            ofs<<int(s.sp)<<" "<<int(s.gen)<<" "<<int(s.num) <<" "<<int(s.pers)<<" "<<s.shift - f.shift<<" \n";
+            ofs<<int(t.sp)<<" "<<int(t.gen)<<" "<<int(t.num) <<" "<<int(t.pers)<<" "<<t.shift - f.shift<<" \n";
+
+            if (type == DetectedCoref::NO) {
+                ofs << "0 0\n";
+            } else if (type == DetectedCoref::FIRST) {
+                ofs << "1 0\n";
+            } else {
+                ofs << "0 1\n";
+            }
+        }
+        ofs.close();
+
+    }
+
+
+
 }
 
 
