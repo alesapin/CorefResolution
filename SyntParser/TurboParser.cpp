@@ -52,8 +52,8 @@ namespace synt{
             result.push_back(parseOneBlock(phrase,syntInform,morfInform));
             fixStreams(syntInform,morfInform);
         }
-        std::remove(TURBO_PARSER_OUT.c_str());
-        std::remove(RUSDEPS_PARSER_OUT.c_str());
+        //std::remove(TURBO_PARSER_OUT.c_str());
+        //std::remove(RUSDEPS_PARSER_OUT.c_str());
         return result;
     }
 

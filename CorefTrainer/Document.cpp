@@ -74,12 +74,40 @@ namespace coref {
     void Document::loadEntities() {
         for(int i = 0;i<coreferences.size();++i) {
             for (int j = 0; j < coreferences[i].size(); ++j) {
-                entites.insert(coreferences[i][j]);
+                entites.push_back(coreferences[i][j]);
             }
         }
     }
 
+    bool Document::findCorefence(synt::ParsedPharse* main, synt::ParsedPharse* alt) {
+        for (int i =0 ; i<this->coreferences.size(); i++) {
+            if (coreferences[i][0] == *main &&coreferences[i][1] == *alt) return true;
+        }
+        return false;
+    }
 
+    void Document::writeTiplesToFile(std::string file)
+    {
+        int lenTriples = 10;
+        std::ofstream s;
+        s.open( file.c_str(), std::ios_base::app );
+        for(int i=0; i < this->entites.size(); i++)
+            for (int j=i+1; j < i+lenTriples-1 && j<entites.size(); j++)
+                for (int k=j+1; k < i+lenTriples && k<entites.size(); k++)
+                {
+                    synt::ParsedPharse* curMain = &this->entites[i];
+                    synt::ParsedPharse* curFirstAlt = &this->entites[j];
+                    synt::ParsedPharse* curSecondAlt = &this->entites[k];
+                    s<<int(curMain->sp)<<" "<<int(curMain->gen)<<" "<<int(curMain->num)<<" "<<int(curMain->pers)<<" "<<curMain->shift<<" ";
+                    s<<int(curFirstAlt->sp)<<" "<<int(curFirstAlt->gen)<<" "<<int(curFirstAlt->num)<<" "<<int(curFirstAlt->pers)<<" "<<curFirstAlt->shift<<" ";
+                    s<<int(curSecondAlt->sp)<<" "<<int(curSecondAlt->gen)<<" "<<int(curSecondAlt->num)<<" "<<int(curSecondAlt->pers)<<" "<<curSecondAlt->shift<<" ";
+                    if (findCorefence(curMain,curFirstAlt))   s<<"1 0\n";
+                    else if (findCorefence(curMain,curSecondAlt)) s<<"0 1\n";
+                    else s<<"0 0\n";
+                }
+        s.close();
+    }
 }
+
 
 

@@ -10,11 +10,13 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <set>
+#include <fstream>
+
 namespace coref {
     class Document {
         const std::string path;
         const std::string name;
-        std::set<synt::ParsedPharse> entites;
+        std::vector<synt::ParsedPharse> entites;
         std::vector<std::vector<synt::ParsedPharse>> coreferences;
         const synt::TurboParser *prs;
 
@@ -27,6 +29,8 @@ namespace coref {
 
         void loadCorefFromXml(const std::string &path);
         friend std::ostream& operator<<(std::ostream& os,const Document& doc);
+        void writeTiplesToFile(std::string file);
+        bool findCorefence(synt::ParsedPharse* main, synt::ParsedPharse* alt);
     };
 }
 
