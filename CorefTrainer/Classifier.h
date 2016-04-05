@@ -12,21 +12,22 @@
 #include "floatfann.h"
 
 #include <set>
+
+
+
 namespace coref {
 
 
+
     class Classifier {
-
-
-        int numHidden;
-        int maxEpochs;
+        int numHidden; // Число вутреннних слоев нейронной сети (NUM_INP+1)
+        int maxEpochs; // Число эпох обучения
         double reqError;
         int printEpochs;
-        static const int NUM_INP;
-        static const int NUM_OUTP;
+        static const int NUM_INP; // Число входных узлов
+        static const int NUM_OUTP; // Число выходых ухлов
         static const int NUM_LAYERS;
-        fann *neuralNetwork;
-
+        struct fann *neuralNetwork;
         void convetToFann(const Triple& ph, fann_type *result) const;
     public:
         Classifier() : numHidden(0), maxEpochs(0), reqError(0), printEpochs(0) { };
@@ -39,10 +40,9 @@ namespace coref {
             fann_set_activation_function_output(neuralNetwork, FANN_SIGMOID_SYMMETRIC);
         }
 
-        void train(const std::string &filename);
-        void save(const std::string &filename) const;
-        void load(const std::string &filename);
-
+        void train(const std::string &filename); // Обучить нейронную сеть
+        void save(const std::string &filename) const; // Сохраить нейронную сеть
+        void load(const std::string &filename); // Загрузить нейронную сеть из файла
         std::vector<ClassifiedTriple> run(const std::vector<Triple> triples) const;
         ClassifiedTriple runSingle(const Triple& t) const;
         ~Classifier() {

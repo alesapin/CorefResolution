@@ -75,9 +75,6 @@ namespace coref {
         return os;
     }
 
-
-
-
     void Document::loadEntities() {
         for(int i = 0;i<coreferences.size();++i) {
             for (int j = 0; j < coreferences[i].size(); ++j) {
@@ -91,6 +88,25 @@ namespace coref {
             if (coreferences[i][0] == main &&coreferences[i][1] == alt) return true;
         }
         return false;
+    }
+    int Document::findEntity(const synt::ParsedPharse& entity) const{
+        int i = 0;
+        for (auto curEnt = entites.begin(); curEnt != entites.end(); ++curEnt) {
+            if (entity == *curEnt) i;
+            i++;
+        }
+        return -1;
+    }
+    std::set<synt::ParsedPharse>::iterator Document::getEntityByOrder(int index) const{
+        int i = 0;
+        for (auto curEnt = entites.begin(); curEnt != entites.end(); ++curEnt) {
+            if (i == index) &curEnt;
+            i++;
+        }
+        return entites.end();
+    }
+    int Document::getEntitiesSIze() const{
+        return entites.size();
     }
 
     void Document::writeTiplesToFile(std::string file) {

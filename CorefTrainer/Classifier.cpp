@@ -22,7 +22,6 @@ namespace coref{
     void Classifier::load(const std::string &filename) {
         fann_destroy(neuralNetwork);
         neuralNetwork = fann_create_from_file(filename.c_str());
-
     }
 
     ClassifiedTriple Classifier::runSingle(const Triple &t) const {
@@ -40,9 +39,6 @@ namespace coref{
         }
 
     }
-
-
-
 
     std::vector<ClassifiedTriple> Classifier::run(const std::vector<Triple> triples) const {
         std::vector<coref::ClassifiedTriple> result(triples.size());
@@ -72,6 +68,7 @@ namespace coref{
         result[12] = int(t.pers);
         result[13] = int(t.shift - f.shift);
     }
+
 
 
 }

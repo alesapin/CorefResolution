@@ -44,6 +44,9 @@ namespace coref {
         friend std::ostream& operator<<(std::ostream& os,const Document& doc);
         //@Deprecated
         void writeTiplesToFile(std::string file);
+        int findEntity(const synt::ParsedPharse& entity) const;
+        std::set<synt::ParsedPharse>::iterator getEntityByOrder(int index) const;
+        int getEntitiesSIze() const;
         std::vector<ClassifiedTriple> getClassifiedTriples() const;
         std::vector<Triple> getTriples() const;
         bool findCorefence(const synt::ParsedPharse& main, const synt::ParsedPharse& alt) const;
