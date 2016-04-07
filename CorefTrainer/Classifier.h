@@ -27,10 +27,15 @@ namespace coref {
         static const int NUM_INP; // Число входных узлов
         static const int NUM_OUTP; // Число выходых ухлов
         static const int NUM_LAYERS;
+        static const std::string TRAIN_FILE_NAME;
         struct fann *neuralNetwork;
         void convetToFann(const Triple& ph, fann_type *result) const;
+
+        int trunc(double d) const { return (int)(d+0.5);}
     public:
-        Classifier() : numHidden(0), maxEpochs(0), reqError(0), printEpochs(0) { };
+        Classifier() : numHidden(0), maxEpochs(0), reqError(0), printEpochs(0), neuralNetwork(NULL) {
+            std::cerr<<"CONSTRUCTOR CALLED\n";
+        }
 
         Classifier(int nh, int maxEps, double rE = 0.0001f, int report = 1000) :
                 numHidden(nh), maxEpochs(maxEps), reqError(rE), printEpochs(report) {
@@ -40,11 +45,15 @@ namespace coref {
             fann_set_activation_function_output(neuralNetwork, FANN_SIGMOID_SYMMETRIC);
         }
 
-        void train(const std::string &filename); // Обучить нейронную сеть
+        void trainFromFile(const std::string &filename); // Обучить нейронную сеть
+        void train(const std::vector<Document>& trainDocs);
         void save(const std::string &filename) const; // Сохраить нейронную сеть
         void load(const std::string &filename); // Загрузить нейронную сеть из файла
         std::vector<ClassifiedTriple> run(const std::vector<Triple> triples) const;
         ClassifiedTriple runSingle(const Triple& t) const;
+
+        Classifier(const Classifier& o);
+        Classifier& operator=(const Classifier &o);
         ~Classifier() {
             fann_destroy(neuralNetwork);
         }

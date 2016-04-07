@@ -9,8 +9,9 @@ namespace coref{
     const int Classifier::NUM_INP = 14;
     const int Classifier::NUM_OUTP = 2;
     const int Classifier::NUM_LAYERS = 3;
+    const std::string Classifier::TRAIN_FILE_NAME = "train.data";
 
-    void Classifier::train(const std::string &filename) {
+    void Classifier::trainFromFile(const std::string &filename) {
         fann_train_on_file(neuralNetwork, filename.c_str(), maxEpochs,
                            printEpochs, reqError);
     }
@@ -30,9 +31,9 @@ namespace coref{
         convetToFann(t,input);
 
         out = fann_run(neuralNetwork, input);
-        if(out[0] == 1){
+        if(trunc(out[0])==1){
             return std::make_tuple(std::get<0>(t),std::get<1>(t),std::get<2>(t),DetectedCoref::FIRST);
-        }else if(out[1] == 1){
+        }else if(trunc(out[1]) == 1){
             return std::make_tuple(std::get<0>(t),std::get<1>(t),std::get<2>(t),DetectedCoref::SECOND);
         }else {
             return std::make_tuple(std::get<0>(t),std::get<1>(t),std::get<2>(t),DetectedCoref::NO);
@@ -69,6 +70,47 @@ namespace coref{
         result[13] = int(t.shift - f.shift);
     }
 
+    Classifier::Classifier(const Classifier &o) {
+        numHidden = o.numHidden;
+        maxEpochs = o.maxEpochs;
+        reqError = o.reqError;
+        printEpochs = o.printEpochs;
+        if(o.neuralNetwork) {
+            neuralNetwork = fann_copy(o.neuralNetwork);
+        }
+
+    }
+
+    Classifier &Classifier::operator=(const Classifier &o) {
+        if(neuralNetwork != o.neuralNetwork) {
+            numHidden = o.numHidden;
+            maxEpochs = o.maxEpochs;
+            reqError = o.reqError;
+            printEpochs = o.printEpochs;
+            if(neuralNetwork) {
+                fann_destroy(neuralNetwork);
+            }
+            neuralNetwork = fann_copy(o.neuralNetwork);
+        }
+        return *this;
+    }
+
+    void Classifier::train(const std::vector<Document> &trainDocs) {
+        std::ofstream data(TRAIN_FILE_NAME);
+        int size = 0;
+        std::vector<std::vector<ClassifiedTriple>> docs;
+        for (const Document &d : trainDocs) {
+            std::vector<ClassifiedTriple> triples = d.getClassifiedTriples();
+            size += triples.size();
+            docs.push_back(triples);
+        }
+        data << size <<" " << NUM_INP <<" " << NUM_OUTP<<"\n";
+        for (auto triples : docs) {
+            writeClassifiedTriples(triples,data);
+        }
+        data.close();
+        trainFromFile(TRAIN_FILE_NAME);
+    }
 
 
 }

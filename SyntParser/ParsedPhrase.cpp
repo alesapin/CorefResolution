@@ -59,17 +59,6 @@ bool synt::ParsedPharse::operator==(const synt::ParsedPharse &o) const {
     return true;
 }
 
-bool synt::ParsedPharse::operator!=(const synt::ParsedPharse &o) const {
-    if(text != o.text) return true;
-    if(mainWord != o.mainWord) return true;
-    if(mainWordNormalForm != o.mainWordNormalForm) return true;
-    if(sp != o.sp) return true;
-    if(gen != o.gen) return true;
-    if(num != o.num) return true;
-    if(pers != o.pers) return true;
-    if(shift != o.shift) return true;
-    return false;
-}
 
 bool synt::ParsedPharse::operator<(const ParsedPharse &o) const {
     if(shift == o.shift){

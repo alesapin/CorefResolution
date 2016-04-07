@@ -44,7 +44,7 @@ namespace synt {
         Person pers;
         bool operator<(const ParsedPharse& o) const;
         bool operator==(const ParsedPharse& o) const;
-        bool operator!=(const ParsedPharse& o) const;
+        bool operator!=(const ParsedPharse& o) const {return !(*this == o);}
     };
 
     std::ostream & operator<<(std::ostream &os, const ParsedPharse &obj);

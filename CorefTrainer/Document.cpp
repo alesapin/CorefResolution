@@ -14,6 +14,7 @@ namespace coref {
         boost::property_tree::read_xml(xmlPath,pt);
         ptree documents = pt.get_child("documents");
         std::string docName = path + name;
+        std::cerr<<"DOCNAME:"<<docName<<"\n";
         ptree searchDoc;
         for(const auto & document : documents){
             if(document.second.get<std::string>("<xmlattr>.file") == docName){
@@ -56,6 +57,11 @@ namespace coref {
                 coreferences[i][j].sp = result[ind].sp;
             }
         }
+        //Sort chains
+        orderChains();
+        //Remove duplicates
+        coreferences.erase(std::unique(coreferences.begin(), coreferences.end()), coreferences.end());
+        //Load entities
         loadEntities();
     }
 
@@ -109,37 +115,6 @@ namespace coref {
         return entites.size();
     }
 
-    void Document::writeTiplesToFile(std::string file) {
-        std::ofstream ofs(file);
-
-        for (auto curEnt = entites.begin(); curEnt != entites.end(); ++curEnt) {
-            for (auto firstCand = std::next(curEnt, 1); firstCand != entites.end(); firstCand++) {
-                if (firstCand->shift - curEnt->shift > WINDOW_SIZE) break;
-                bool secondAltBreak = false;
-                for (auto secondCand = std::next(firstCand, 1); secondCand != entites.end(); secondCand++) {
-                    if (secondCand->shift - curEnt->shift > WINDOW_SIZE) {
-                        secondAltBreak = true;
-                        break;
-                    }
-                    ofs<<int(curEnt->sp)<<" "<<int(curEnt->gen)<<" "<<int(curEnt->num)
-                        <<" "<<int(curEnt->pers)<<" ";
-                    ofs<<int(firstCand->sp)<<" "<<int(firstCand->gen)<<" "
-                        <<int(firstCand->num)<<" "<<int(firstCand->pers)<<" "<<firstCand->shift<<" ";
-                    ofs<<int(secondCand->sp)<<" "<<int(secondCand->gen)<<" "<<
-                            int(secondCand->num)<<" "<<int(secondCand->pers)<<" "<<secondCand->shift<<" ";
-                    if (findCorefence(*curEnt,*firstCand)) {
-                        ofs << "\n1 0\n";
-                    } else if (findCorefence(*curEnt, *secondCand)) {
-                        ofs << "\n0 1\n";
-                    } else {
-                        ofs << "\n0 0\n";
-                    }
-                }
-                if (secondAltBreak) break;
-            }
-        }
-        ofs.close();
-    }
     std::vector<ClassifiedTriple> Document::getClassifiedTriples() const{
         std::vector<ClassifiedTriple> result;
         std::vector<Triple> triples = generateTriples(entites,WINDOW_SIZE);
@@ -164,20 +139,32 @@ namespace coref {
         return generateTriples(entites,WINDOW_SIZE);
     }
 
+    void Document::orderChains() {
+        std::sort(coreferences.begin(),coreferences.end(),
+            [](const Chain& a, const Chain& b){
+                if(a.size() == 0) return false;
+                if(b.size() == 0) return true;
+                return a[0] < b[0];
+            }
+        );
+    }
+
 
     std::vector<Triple> generateTriples(const std::set<synt::ParsedPharse> &entites, int windowSize) {
         std::vector<coref::Triple> result;
         for (auto curEnt = entites.begin(); curEnt != entites.end(); ++curEnt) {
+            bool oneTripleCreated = false;
             for (auto firstCand = std::next(curEnt, 1); firstCand != entites.end(); firstCand++) {
-                if (firstCand->shift - curEnt->shift > windowSize) break;
+                if (firstCand->shift - curEnt->shift > windowSize && oneTripleCreated) break;
                 bool secondAltBreak = false;
                 for (auto secondCand = std::next(firstCand, 1); secondCand != entites.end(); secondCand++) {
-                    if (secondCand->shift - curEnt->shift > windowSize) {
+                    if (secondCand->shift - curEnt->shift > windowSize && oneTripleCreated) {
                         secondAltBreak = true;
                         break;
                     }
                     auto triple = std::make_tuple(*curEnt,*firstCand,*secondCand);
                     result.push_back(triple);
+                    oneTripleCreated = true;
                 }
                 if (secondAltBreak) break;
             }
@@ -185,29 +172,37 @@ namespace coref {
         return result;
     }
 
-    static void writeClassifiedTriples(const std::vector<ClassifiedTriple>& triples,const std::string& filename){
-        std::ofstream ofs(filename);
+    void writeClassifiedTriples(const std::vector<ClassifiedTriple>& triples,std::ostream& os){
         for(const ClassifiedTriple& trpl:triples){
+
             synt::ParsedPharse f = std::get<0>(trpl);
             synt::ParsedPharse s = std::get<1>(trpl);
             synt::ParsedPharse t = std::get<2>(trpl);
             DetectedCoref type = std::get<3>(trpl);
-            ofs<<int(f.sp)<<" "<<int(f.gen)<<" "<<int(f.num) <<" "<<int(f.pers)<<" "<<" \n";
-            ofs<<int(s.sp)<<" "<<int(s.gen)<<" "<<int(s.num) <<" "<<int(s.pers)<<" "<<s.shift - f.shift<<" \n";
-            ofs<<int(t.sp)<<" "<<int(t.gen)<<" "<<int(t.num) <<" "<<int(t.pers)<<" "<<t.shift - f.shift<<" \n";
+            os<<int(f.sp)<<" "<<int(f.gen)<<" "<<int(f.num) <<" "<<int(f.pers) << " ";
+            os<<int(s.sp)<<" "<<int(s.gen)<<" "<<int(s.num) <<" "<<int(s.pers)<<" "<<s.shift - f.shift << " ";
+            os<<int(t.sp)<<" "<<int(t.gen)<<" "<<int(t.num) <<" "<<int(t.pers)<<" "<<t.shift - f.shift<<" \n";
 
             if (type == DetectedCoref::NO) {
-                ofs << "0 0\n";
+                os << "0 0\n";
             } else if (type == DetectedCoref::FIRST) {
-                ofs << "1 0\n";
+                os << "1 0\n";
             } else {
-                ofs << "0 1\n";
+                os << "0 1\n";
             }
         }
-        ofs.close();
-
     }
 
+    std::ostream &operator<<(std::ostream &os, const DetectedCoref &obj) {
+        if(obj == DetectedCoref::NO){
+            os << "00";
+        }else if(obj == DetectedCoref::FIRST){
+            os << "10";
+        }else {
+            os <<"01";
+        }
+        return os;
+    }
 
 
 }
