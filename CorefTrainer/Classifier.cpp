@@ -24,6 +24,16 @@ namespace coref{
         fann_destroy(neuralNetwork);
         neuralNetwork = fann_create_from_file(filename.c_str());
     }
+    void Classifier::destroy() {
+        fann_destroy(neuralNetwork);
+    }
+    void Classifier::createNew()
+    {
+        fann_destroy(neuralNetwork);
+        neuralNetwork = fann_create_standard(NUM_LAYERS, NUM_INP, numHidden, NUM_OUTP);
+        fann_set_activation_function_hidden(neuralNetwork, FANN_SIGMOID_SYMMETRIC);
+        fann_set_activation_function_output(neuralNetwork, FANN_SIGMOID_SYMMETRIC);
+    }
 
     ClassifiedTriple Classifier::runSingle(const Triple &t) const {
         fann_type *out;

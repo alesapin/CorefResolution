@@ -49,6 +49,8 @@ namespace coref {
         void train(const std::vector<Document>& trainDocs);
         void save(const std::string &filename) const; // Сохраить нейронную сеть
         void load(const std::string &filename); // Загрузить нейронную сеть из файла
+        void destroy();
+        void createNew();
         std::vector<ClassifiedTriple> run(const std::vector<Triple> triples) const;
         ClassifiedTriple runSingle(const Triple& t) const;
 
