@@ -9,7 +9,7 @@
 #include <vector>
 #include "../SyntParser/ParsedPhrase.h"
 #include "Document.h"
-#include "floatfann.h"
+//#include "floatfann.h"
 
 #include <set>
 
@@ -41,8 +41,11 @@ namespace coref {
                 numHidden(nh), maxEpochs(maxEps), reqError(rE), printEpochs(report) {
             neuralNetwork = fann_create_standard(NUM_LAYERS, NUM_INP,
                                                  numHidden, NUM_OUTP);
-            fann_set_activation_function_hidden(neuralNetwork, FANN_SIGMOID_SYMMETRIC);
-            fann_set_activation_function_output(neuralNetwork, FANN_SIGMOID_SYMMETRIC);
+            //fann_set_activation_function_hidden(neuralNetwork, FANN_SIGMOID_SYMMETRIC);
+            //fann_set_activation_function_output(neuralNetwork, FANN_SIGMOID_SYMMETRIC);
+            fann_set_activation_function_hidden(neuralNetwork, FANN_LINEAR_PIECE_SYMMETRIC);
+            fann_set_activation_function_output(neuralNetwork, FANN_LINEAR_PIECE_SYMMETRIC);
+            fann_set_training_algorithm(neuralNetwork,FANN_TRAIN_INCREMENTAL);
         }
 
         void trainFromFile(const std::string &filename); // Обучить нейронную сеть
