@@ -32,7 +32,7 @@ namespace synt {
     /**
      * Parser word output.
      */
-    struct ParsedPharse {
+    struct ParsedPhrase {
         std::string text;
         std::string mainWord;
         std::string mainWordNormalForm;
@@ -42,17 +42,17 @@ namespace synt {
         Gender gen;
         Number num;
         Person pers;
-        bool operator<(const ParsedPharse& o) const;
-        bool operator==(const ParsedPharse& o) const;
-        bool operator!=(const ParsedPharse& o) const {return !(*this == o);}
+        bool operator<(const ParsedPhrase& o) const;
+        bool operator==(const ParsedPhrase& o) const;
+        bool operator!=(const ParsedPhrase& o) const {return !(*this == o);}
     };
 
-    std::ostream & operator<<(std::ostream &os, const ParsedPharse &obj);
+    std::ostream & operator<<(std::ostream &os, const ParsedPhrase &obj);
 }
 namespace std {
     template <>
-    struct hash<synt::ParsedPharse> {
-        std::size_t operator()(const synt::ParsedPharse& k) const {
+    struct hash<synt::ParsedPhrase> {
+        std::size_t operator()(const synt::ParsedPhrase& k) const {
             using std::size_t;
             using std::hash;
             using std::string;

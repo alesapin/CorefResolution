@@ -24,13 +24,13 @@ namespace coref {
         }
         for(const auto & chain : searchDoc) {
             if (chain.first == "chain") {
-                std::vector<synt::ParsedPharse> currentChain;
+                std::vector<synt::ParsedPhrase> currentChain;
                 for (const auto &item : chain.second) {
                     int sh = item.second.get<int>("<xmlattr>.sh");
                     int len = item.second.get<int>("<xmlattr>.ln");
                     std::string type = item.second.get<std::string>("<xmlattr>.str");
                     std::string text = item.second.get<std::string>("cont");
-                    synt::ParsedPharse ph;
+                    synt::ParsedPhrase ph;
                     ph.text = text;
                     ph.shift = sh;
                     ph.groupType = type;
@@ -45,7 +45,7 @@ namespace coref {
                 parserRequest.push_back(coreferences[i][j].text);
             }
         }
-        std::vector<synt::ParsedPharse> result = prs->invokeTurboParser(parserRequest);
+        std::vector<synt::ParsedPhrase> result = prs->invokeTurboParser(parserRequest);
         for(int i = 0;i<coreferences.size();++i) {
             for(int j = 0;j<coreferences[i].size();++j){
                 int ind = getSingleDimenIndex(i,j);
@@ -65,6 +65,39 @@ namespace coref {
         loadEntities();
     }
 
+    void Document::loadEntitesFromXml(const std::string &path) {
+        using boost::property_tree::ptree;
+        ptree pt;
+        boost::property_tree::read_xml(path, pt);
+        ptree document = pt.get_child("document");
+        std::vector<synt::ParsedPhrase> phrases;
+        for (const auto &item : document) {
+            int sh = item.second.get<int>("<xmlattr>.sh");
+            int len = item.second.get<int>("<xmlattr>.ln");
+            std::string type = item.second.get<std::string>("<xmlattr>.str");
+            std::string text = item.second.get<std::string>("cont");
+            synt::ParsedPhrase ph;
+            ph.text = text;
+            ph.shift = sh;
+            ph.groupType = type;
+            phrases.push_back(ph);
+        }
+        std::vector<std::string> request(phrases.size());
+        std::transform(phrases.begin(),phrases.end(),request.begin(),[](const synt::ParsedPhrase& phrase) {
+            return phrase.text;
+        });
+        std::vector<synt::ParsedPhrase> result = prs->invokeTurboParser(request);
+        for(int i = 0;i<result.size();++i){
+            phrases[i].mainWord = result[i].mainWord;
+            phrases[i].mainWordNormalForm = result[i].mainWordNormalForm;
+            phrases[i].gen = result[i].gen;
+            phrases[i].num = result[i].num;
+            phrases[i].pers = result[i].pers;
+            phrases[i].sp = result[i].sp;
+            entites.insert(phrases[i]);
+        }
+
+    }
     int Document::getSingleDimenIndex(int i, int j) {
         return i*coreferences[i].size() + j;
     }
@@ -89,13 +122,13 @@ namespace coref {
         }
     }
 
-    bool Document::findCorefence(const synt::ParsedPharse& main, const synt::ParsedPharse& alt) const{
+    bool Document::findCorefence(const synt::ParsedPhrase& main, const synt::ParsedPhrase& alt) const{
         for (int i =0 ; i<this->coreferences.size(); i++) {
             if (coreferences[i][0] == main &&coreferences[i][1] == alt) return true;
         }
         return false;
     }
-    int Document::findEntity(const synt::ParsedPharse& entity) const{
+    int Document::findEntity(const synt::ParsedPhrase& entity) const{
         int i = 0;
         for (auto curEnt = entites.begin(); curEnt != entites.end(); ++curEnt) {
             if (entity == *curEnt) i;
@@ -103,7 +136,7 @@ namespace coref {
         }
         return -1;
     }
-    std::set<synt::ParsedPharse>::iterator Document::getEntityByOrder(int index) const{
+    std::set<synt::ParsedPhrase>::iterator Document::getEntityByOrder(int index) const{
         int i = 0;
         for (auto curEnt = entites.begin(); curEnt != entites.end(); ++curEnt) {
             if (i == index) &curEnt;
@@ -150,7 +183,7 @@ namespace coref {
     }
 
 
-    std::vector<Triple> generateTriples(const std::set<synt::ParsedPharse> &entites, int windowSize) {
+    std::vector<Triple> generateTriples(const std::set<synt::ParsedPhrase> &entites, int windowSize) {
         std::vector<coref::Triple> result;
         for (auto curEnt = entites.begin(); curEnt != entites.end(); ++curEnt) {
             bool oneTripleCreated = false;
@@ -175,9 +208,9 @@ namespace coref {
     void writeClassifiedTriples(const std::vector<ClassifiedTriple>& triples,std::ostream& os){
         for(const ClassifiedTriple& trpl:triples){
 
-            synt::ParsedPharse f = std::get<0>(trpl);
-            synt::ParsedPharse s = std::get<1>(trpl);
-            synt::ParsedPharse t = std::get<2>(trpl);
+            synt::ParsedPhrase f = std::get<0>(trpl);
+            synt::ParsedPhrase s = std::get<1>(trpl);
+            synt::ParsedPhrase t = std::get<2>(trpl);
             DetectedCoref type = std::get<3>(trpl);
             os<<int(f.sp)<<" "<<int(f.gen)<<" "<<int(f.num) <<" "<<int(f.pers) << " ";
             os<<int(s.sp)<<" "<<int(s.gen)<<" "<<int(s.num) <<" "<<int(s.pers)<<" "<<s.shift - f.shift << " ";

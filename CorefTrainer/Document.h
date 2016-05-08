@@ -20,14 +20,14 @@ namespace coref {
         NO,FIRST,SECOND
     };
     std::ostream& operator<<(std::ostream& os,const DetectedCoref& obj);
-    typedef std::vector<synt::ParsedPharse> Chain;
-    typedef std::tuple<synt::ParsedPharse,synt::ParsedPharse,synt::ParsedPharse> Triple;
-    typedef std::tuple<synt::ParsedPharse,synt::ParsedPharse,synt::ParsedPharse,DetectedCoref> ClassifiedTriple;
+    typedef std::vector<synt::ParsedPhrase> Chain;
+    typedef std::tuple<synt::ParsedPhrase,synt::ParsedPhrase,synt::ParsedPhrase> Triple;
+    typedef std::tuple<synt::ParsedPhrase,synt::ParsedPhrase,synt::ParsedPhrase,DetectedCoref> ClassifiedTriple;
 
     class Document {
         std::string path;
         std::string name;
-        std::set<synt::ParsedPharse> entites;
+        std::set<synt::ParsedPhrase> entites;
         std::vector<Chain> coreferences;
         const synt::TurboParser *prs;
 
@@ -46,24 +46,24 @@ namespace coref {
             name = paths.back();
             path = paths[paths.size()-2] + "/";
         }
-        void addCorefChain(const std::vector<synt::ParsedPharse> &coref);
-
+        void addCorefChain(const std::vector<synt::ParsedPhrase> &coref);
         void loadCorefFromXml(const std::string &path);
+        void loadEntitesFromXml(const std::string &path);
         friend std::ostream& operator<<(std::ostream& os,const Document& doc);
         //@Deprecated
         void writeTiplesToFile(std::string file);
-        int findEntity(const synt::ParsedPharse& entity) const;
-        std::set<synt::ParsedPharse>::iterator getEntityByOrder(int index) const;
+        int findEntity(const synt::ParsedPhrase& entity) const;
+        std::set<synt::ParsedPhrase>::iterator getEntityByOrder(int index) const;
         int getEntitiesSIze() const;
         std::vector<ClassifiedTriple> getClassifiedTriples() const;
-        std::set<synt::ParsedPharse> getEntities() const {return entites;}
+        std::set<synt::ParsedPhrase> getEntities() const {return entites;}
         std::vector<Triple> getTriples() const;
-        bool findCorefence(const synt::ParsedPharse& main, const synt::ParsedPharse& alt) const;
+        bool findCorefence(const synt::ParsedPhrase& main, const synt::ParsedPhrase& alt) const;
         std::vector<Chain> getCorefs() const { return coreferences;}
 
     };
 
-    std::vector<Triple> generateTriples(const std::set<synt::ParsedPharse>& entites,int windowSize);
+    std::vector<Triple> generateTriples(const std::set<synt::ParsedPhrase>& entites,int windowSize);
 
     void writeClassifiedTriples(const std::vector<ClassifiedTriple>& tiples,std::ostream& os);
 

@@ -26,7 +26,7 @@ namespace synt {
         return "undef";
     }
 
-    std::ostream &operator<<(std::ostream &os, const ParsedPharse &obj) {
+    std::ostream &operator<<(std::ostream &os, const ParsedPhrase &obj) {
         os <<"[Text: " << obj.text<<";";
         os <<" Main Word: "<<obj.mainWord<<";";
         os <<" Main word NF: "<<obj.mainWordNormalForm<<";";
@@ -47,7 +47,7 @@ namespace synt {
 
 }
 
-bool synt::ParsedPharse::operator==(const synt::ParsedPharse &o) const {
+bool synt::ParsedPhrase::operator==(const synt::ParsedPhrase &o) const {
     if(text != o.text) return false;
     if(mainWord != o.mainWord) return false;
     if(mainWordNormalForm != o.mainWordNormalForm) return false;
@@ -60,7 +60,7 @@ bool synt::ParsedPharse::operator==(const synt::ParsedPharse &o) const {
 }
 
 
-bool synt::ParsedPharse::operator<(const ParsedPharse &o) const {
+bool synt::ParsedPhrase::operator<(const ParsedPhrase &o) const {
     if(shift == o.shift){
         return text.length() < o.text.length();
     }

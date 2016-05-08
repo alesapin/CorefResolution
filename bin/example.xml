@@ -1,0 +1,32 @@
+<document>
+    <item sh="757" ln="14" str="noun">
+        <cont><![CDATA[Зонд «Розетта»]]></cont>
+    </item>
+    <item sh="837" ln="2" str="pron">
+        <cont><![CDATA[он]]></cont>
+    </item>
+    <item sh="1096" ln="6" str="noun">
+        <cont><![CDATA[67P/CG]]></cont>
+    </item>
+    <item sh="1116" ln="5" str="refl">
+        <cont><![CDATA[собой]]></cont>
+    </item>
+    <item sh="1404" ln="6" str="noun">
+        <cont><![CDATA[кометы]]></cont>
+    </item>
+    <item sh="1490" ln="3" str="pron">
+        <cont><![CDATA[она]]></cont>
+    </item>
+    <item sh="1049" ln="7" str="noun">
+        <cont><![CDATA[Юпитера]]></cont>
+    </item>
+    <item sh="1065" ln="12" str="noun">
+        <cont><![CDATA[этой планеты]]></cont>
+    </item>
+    <item sh="1268" ln="18" str="noun">
+        <cont><![CDATA[зонд Philae Lander]]></cont>
+    </item>
+    <item sh="1288" ln="7" str="rel">
+        <cont><![CDATA[который]]></cont>
+    </item>
+</document>

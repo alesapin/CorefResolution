@@ -1,0 +1,92 @@
+<taeDescription xmlns="http://uima.apache.org/resourceSpecifier">
+<frameworkImplementation>org.apache.uima.cpp</frameworkImplementation>
+<primitive>true</primitive>
+<annotatorImplementationName>CorefAnnotator</annotatorImplementationName>
+
+
+<analysisEngineMetaData>
+
+  <name>CorefAnnotator</name>
+  <description>Detects coreferences in text</description>
+  <version>1.0</version>
+  <vendor>Part</vendor>
+
+  <configurationParameters>
+      <configurationParameter>
+          <name>TPPath</name>
+          <description>Turbo Parser path</description>
+          <type>String</type>
+          <multiValued>false</multiValued>
+          <mandatory>true</mandatory>
+      </configurationParameter>
+      <configurationParameter>
+          <name>NeuronPath</name>
+          <description>Path to stored neural network</description>
+          <type>String</type>
+          <multiValued>false</multiValued>
+          <mandatory>true</mandatory>
+      </configurationParameter>
+  </configurationParameters>
+
+  <configurationParameterSettings>
+      <nameValuePair>
+          <name>TPPath</name>
+          <value>
+              <string>/home/alesapin/Code/cpp/mmaot/depsparser</string>
+          </value>
+      </nameValuePair>
+      <nameValuePair>
+          <name>NeuronPath</name>
+          <value>
+              <string>neuron.txt</string>
+          </value>
+      </nameValuePair>
+  </configurationParameterSettings>
+
+
+    <typeSystemDescription> <!-- Описание типов -->
+    <types>
+      <typeDescription>
+        <name>org.Coreference</name>
+        <description></description>
+        <supertypeName>uima.tcas.Annotation</supertypeName>
+        <features> <!-- Фича с кореферентной фичей -->
+          <featureDescription>
+            <name>RefStart</name>
+            <description></description>
+            <rangeTypeName>uima.cas.Integer</rangeTypeName>
+          </featureDescription>
+          <featureDescription>
+              <name>RefEnd</name>
+              <description></description>
+              <rangeTypeName>uima.cas.Integer</rangeTypeName>
+          </featureDescription>
+        </features>
+      </typeDescription>
+    </types>
+  </typeSystemDescription>
+
+  <capabilities> <!-- Входовыход -->
+    <capability>
+      <inputs/>
+      <outputs>
+        <type allAnnotatorFeatures="true">org.Coreference</type>
+        <feature>org.Coreference:RefStart</feature>
+        <feature>org.Coreference:RefEnd</feature>
+
+      </outputs>
+      <inputSofas>
+        <sofaName>EntitiesPath</sofaName>
+        <sofaName>DocumentPath</sofaName>
+      </inputSofas>
+      <outputSofas>
+          <sofaName>CoreferencePairs</sofaName>
+      </outputSofas>
+    </capability>
+  </capabilities>
+
+
+
+
+</analysisEngineMetaData>
+</taeDescription>

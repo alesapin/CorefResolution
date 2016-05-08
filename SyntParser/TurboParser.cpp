@@ -17,26 +17,8 @@ namespace synt{
 
     const std::string TurboParser::SEP_START = "{ ";
     const std::string TurboParser::SEP_END = " }";
-//
-//    void TurboParser::prepareTurboparser(const std::string& text){
-//        using boost::property_tree::ptree;
-//        ptree pt;
-//        std::vector<std::string> splited;
-//        boost::algorithm::split(splited,text,boost::is_any_of("\t "));
-//        boost::property_tree::xml_writer_settings<char> settings(' ', 4);
-//        for(const std::string& word: splited){
-//            ptree w;
-//            w.put_value(word);
-//            ptree rel;
-//            rel.put("<xmlattr>.id_head", "\"\"");
-//            rel.put("<xmlattr>.type", "\"\"");
-//            w.add_child("rel",rel);
-//            pt.add_child(BASIC_XML_PREFIX,w);
-//        }
-//        write_xml(TURBO_PARSER_INP,pt,std::locale(),settings);
-//    }
 
-    std::vector<ParsedPharse> TurboParser::invokeTurboParser(const std::vector<std::string>& req) const {
+    std::vector<ParsedPhrase> TurboParser::invokeTurboParser(const std::vector<std::string>& req) const {
 
         std::string program = path + "/launch.sh \"" + prepareText(req) +"\" " + TURBO_PARSER_OUT;
         std::system(program.c_str());
@@ -47,7 +29,7 @@ namespace synt{
         std::getline(syntInform,syntLine);
         std::getline(morfInform,morfLine);
 
-        std::vector<ParsedPharse> result;
+        std::vector<ParsedPhrase> result;
         for(const std::string& phrase: req){
             result.push_back(parseOneBlock(phrase,syntInform,morfInform));
             fixStreams(syntInform,morfInform);
@@ -64,7 +46,7 @@ namespace synt{
         return chars[SYNT_SP_COL] == "NOUN" || chars[SYNT_SP_COL] == "NPRO";
     }
 
-    void TurboParser::generateLine(ParsedPharse &ph, const std::string &morphLine) const{
+    void TurboParser::generateLine(ParsedPhrase &ph, const std::string &morphLine) const{
         std::vector<std::string> chars;
         boost::split(chars,morphLine,boost::is_any_of("\t "));
         if(chars[MORPH_SP_COL] == "NOUN"){
@@ -97,7 +79,7 @@ namespace synt{
         return firstSym == SEP_START[0] || firstSym == SEP_END[1];
     }
 
-    bool TurboParser::tryMainWord(ParsedPharse &phrase,  std::ifstream &syntStream,
+    bool TurboParser::tryMainWord(ParsedPhrase &phrase,  std::ifstream &syntStream,
                                   std::ifstream &morphStream) const {
         std::string syntLine;
         std::string morphLine;
@@ -126,7 +108,7 @@ namespace synt{
         return std::stoi(chars[SYNT_REFERED_NUM_COL]);
     }
 
-    bool TurboParser::tryFirstSpeechPart(ParsedPharse &phrase,  std::ifstream &syntStream,
+    bool TurboParser::tryFirstSpeechPart(ParsedPhrase &phrase,  std::ifstream &syntStream,
                                          std::ifstream &morphStream)  const{
         std::string syntLine;
         std::string morphLine;
@@ -141,7 +123,7 @@ namespace synt{
         return false;
     }
 
-    bool TurboParser::tryFirstWord(ParsedPharse &phrase, std::ifstream &syntStream,
+    bool TurboParser::tryFirstWord(ParsedPhrase &phrase, std::ifstream &syntStream,
                                    std::ifstream &morphStream) const {
         std::string morphLine;
         std::string syntLine;
@@ -151,9 +133,9 @@ namespace synt{
         return true;
     }
 
-    ParsedPharse TurboParser::parseOneBlock(const std::string &text, std::ifstream &syntStream,
+    ParsedPhrase TurboParser::parseOneBlock(const std::string &text, std::ifstream &syntStream,
                                             std::ifstream &morphStream) const {
-        ParsedPharse result;
+        ParsedPhrase result;
         result.text = text;
         int startSyntPos = syntStream.tellg();
         int startMorphPos = morphStream.tellg();
@@ -221,8 +203,6 @@ namespace synt{
         }
         return Person::UNDEF ;
     }
-
-
 }
 
 

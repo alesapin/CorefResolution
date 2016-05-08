@@ -64,9 +64,9 @@ namespace coref{
     }
 
     void Classifier::convetToFann(const Triple& ph, fann_type *result) const {
-        synt::ParsedPharse f = std::get<0>(ph);
-        synt::ParsedPharse s = std::get<1>(ph);
-        synt::ParsedPharse t = std::get<2>(ph);
+        synt::ParsedPhrase f = std::get<0>(ph);
+        synt::ParsedPhrase s = std::get<1>(ph);
+        synt::ParsedPhrase t = std::get<2>(ph);
         result[0] = int(f.sp);
         result[1] = int(f.gen);
         result[2] = int(f.num);

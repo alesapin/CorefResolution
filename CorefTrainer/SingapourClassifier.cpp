@@ -46,7 +46,7 @@ namespace coref {
         double sumPrec = 0;
         int counter = 0;
         for(const Document &d : docs){
-            std::vector<coref::Chain> result = resolve(d);
+            std::vector<coref::Chain> result = classify(d);
             double prec = countPrecision(d,result);
             double rec = countRecall(d,result);
             sumRec += rec;
@@ -57,25 +57,24 @@ namespace coref {
     }
 
 
-    std::vector<Chain> SingapourClassifier::resolve(const coref::Document &d) const{
+    std::vector<Chain> SingapourClassifier::classify(const coref::Document &d) const{
         std::vector<coref::SingapourClassifier::Chain> result;
-        std::set<synt::ParsedPharse> phrases = d.getEntities();
+        std::set<synt::ParsedPhrase> phrases = d.getEntities();
         std::vector<Triple> triples = d.getTriples();
         std::vector<coref::ClassifiedTriple> neuronResult = cl.run(triples);
-        for(const synt::ParsedPharse &m : phrases){
+        for(const synt::ParsedPhrase &m : phrases){
             Chain c = resolveOne(m,neuronResult);
             if(c.size() > 1){
                 result.push_back(c);
             }
-
         }
         return result;
     }
 
-    Chain SingapourClassifier::resolveOne(const synt::ParsedPharse &m, const std::vector<ClassifiedTriple> &triples) const{
+    Chain SingapourClassifier::resolveOne(const synt::ParsedPhrase &m, const std::vector<ClassifiedTriple> &triples) const{
         Chain result;
         result.push_back(m);
-        std::map<synt::ParsedPharse,int> candidates;
+        std::map<synt::ParsedPhrase,int> candidates;
         for(const ClassifiedTriple& t: triples){
             if(std::get<0>(t) == m) {
                 candidates[std::get<1>(t)] = 0;
@@ -97,7 +96,7 @@ namespace coref {
                 }
             }
         }
-        typedef std::pair<synt::ParsedPharse,int> PairType;
+        typedef std::pair<synt::ParsedPhrase,int> PairType;
         if(candidates.size() >= 1) {
             auto maxItr = std::max_element(candidates.begin(), candidates.end(),
                                            [](const PairType &p1, const PairType &p2) {

@@ -21,19 +21,19 @@ namespace synt {
     class TurboParser {
     public:
         TurboParser(const std::string &programsPath):path(programsPath){};
-        std::vector<ParsedPharse> invokeTurboParser(const  std::vector<std::string>& req) const;
+        std::vector<ParsedPhrase> invokeTurboParser(const  std::vector<std::string>& req) const;
     private:
 
-        ParsedPharse parseOneBlock(const std::string& text, std::ifstream& syntStream, std::ifstream& morphStream) const;
-        bool tryMainWord(ParsedPharse& phrase, std::ifstream& syntStream, std::ifstream& morphStream) const ;
-        bool tryFirstSpeechPart(ParsedPharse& phrase, std::ifstream& syntStream, std::ifstream& morphStream) const;
-        bool tryFirstWord(ParsedPharse& phrase, std::ifstream& syntStream, std::ifstream& morphStream) const;
+        ParsedPhrase parseOneBlock(const std::string& text, std::ifstream& syntStream, std::ifstream& morphStream) const;
+        bool tryMainWord(ParsedPhrase& phrase, std::ifstream& syntStream, std::ifstream& morphStream) const ;
+        bool tryFirstSpeechPart(ParsedPhrase& phrase, std::ifstream& syntStream, std::ifstream& morphStream) const;
+        bool tryFirstWord(ParsedPhrase& phrase, std::ifstream& syntStream, std::ifstream& morphStream) const;
         std::string prepareText(const  std::vector<std::string>& req) const;
         std::size_t getSyntPos(const std::string& syntLine) const;
         bool isSepLine(const std::string& line) const;
         void fixStreams(std::ifstream& syntStream, std::ifstream& morphStream) const;
         bool checkNounOrNproLine(const std::string &line) const;
-        void generateLine(ParsedPharse& ph,const std::string& morphLine) const;
+        void generateLine(ParsedPhrase& ph,const std::string& morphLine) const;
 
         Gender getGender(const std::string& morphChars) const;
         Number getNumber(const std::string& morphChars) const;

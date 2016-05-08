@@ -34,7 +34,6 @@ namespace coref {
         int trunc(double d) const { return (int)(d+0.5);}
     public:
         Classifier() : numHidden(0), maxEpochs(0), reqError(0), printEpochs(0), neuralNetwork(NULL) {
-            std::cerr<<"CONSTRUCTOR CALLED\n";
         }
 
         Classifier(int nh, int maxEps, double rE = 0.0001f, int report = 1000) :
